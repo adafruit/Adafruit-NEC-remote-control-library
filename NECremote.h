@@ -2,7 +2,11 @@
 
 // MIT license
 
-#include <WProgram.h>
+#if ARDUINO >= 100
+ #include "Arduino.h"
+#else
+ #include "WProgram.h"
+#endif
 
 // what our timing resolution should be, larger is better
 // as its more 'precise' - but too large and you wont get
