@@ -1,13 +1,27 @@
-// Basic timer-less NEC mini-remote library 
+/*************************************************** 
+  This is an example for the Adafruit NEC Remote Control
 
-// MIT license
+  Designed specifically to work with the Adafruit NEC Remote Control
+	----> http://www.adafruit.com/products/389
+  and IR Receiver Sensor
+	----> http://www.adafruit.com/products/157
 
-#include "NECremote.h"
+  These devices use IR to communicate, 1 pin is required to  
+  interface
+  Adafruit invests time and resources providing this open source code, 
+  please support Adafruit and open-source hardware by purchasing 
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  BSD license, all text above must be included in any redistribution
+ ****************************************************/
+
+#include "Adafruit_NECremote.h"
 #include "pins_arduino.h"
 #include "wiring_private.h"
 
 
-NECremote::NECremote(uint8_t pin) {
+Adafruit_NECremote::Adafruit_NECremote(uint8_t pin) {
   _irpin = pin;
   _irpinport = digitalPinToPort(_irpin);
   _irpinmask = digitalPinToBitMask(_irpin);
@@ -17,7 +31,7 @@ NECremote::NECremote(uint8_t pin) {
   maxwaiting = 0;
 }
 
-int16_t NECremote::listen(int16_t maxwaitseconds) {
+int16_t Adafruit_NECremote::listen(int16_t maxwaitseconds) {
   uint16_t p1, p2, timer;
   
   p1 = p2 = 0;
@@ -57,8 +71,15 @@ int16_t NECremote::listen(int16_t maxwaitseconds) {
   int8_t b;
   for (uint8_t i=0; i<32; i++) {
     b = readNECbit();
-    if ((b < 0) || timedout) return -1;
-    
+    if (timedout) {
+      return -1;
+    }
+    if  (b < 0) {
+      if (i == 0) 
+	return -3; // repeat!
+      else
+	return -1;
+    }
     data[i/8] |= b << (i%8);
   }
   /*
@@ -67,14 +88,16 @@ int16_t NECremote::listen(int16_t maxwaitseconds) {
   Serial.print(data[2], HEX); Serial.print(" ");
   Serial.println(data[3], HEX);
   */
+
   if ((data[0] == (~data[1] & 0xFF)) && (data[2] == (~data[3] & 0xFF))) {
     return data[2];
+    
   }
-  return -1;
+  return -2;
 }
 
 
-uint16_t NECremote::measurePulse(boolean state) {
+uint16_t Adafruit_NECremote::measurePulse(boolean state) {
   uint16_t pulse = 0;
   uint8_t statemask;
   
@@ -114,7 +137,7 @@ uint16_t NECremote::measurePulse(boolean state) {
 }
 
 
-uint8_t NECremote::readNECbit(void) {
+uint8_t Adafruit_NECremote::readNECbit(void) {
   int16_t p1, p2;
   
   p1 = measurePulse(0);
