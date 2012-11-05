@@ -44,8 +44,8 @@ int16_t Adafruit_NECremote::listen(int16_t maxwaitseconds) {
   timedout = false;
   
   // wait for starting pulses
-  while ( ((p1 < 8000/RESOLUTION) || (p1 > 10000/RESOLUTION)) && 
-          ((p2 < 4000/RESOLUTION) || (p2 > 5000/RESOLUTION)))  {
+  while ( ((p1 < 7000/RESOLUTION) || (p1 > 10000/RESOLUTION)) && 
+          ((p2 < 3000/RESOLUTION) || (p2 > 5000/RESOLUTION)))  {
     p1 = measurePulse(0);
     if (timing) {
         maxwaiting -= p1;
@@ -63,6 +63,8 @@ int16_t Adafruit_NECremote::listen(int16_t maxwaitseconds) {
         }
     }
     if (timedout)           return -1;
+    //Serial.println(p1);
+    //Serial.println(p2);
   }
 
   //Serial.println("NEC");
@@ -89,10 +91,12 @@ int16_t Adafruit_NECremote::listen(int16_t maxwaitseconds) {
   Serial.println(data[3], HEX);
   */
 
-  if ((data[0] == (~data[1] & 0xFF)) && (data[2] == (~data[3] & 0xFF))) {
-    return data[2];
-    
-  }
+  if ((data[0] == (~data[1] & 0xFF)) && (data[2] == (~data[3] & 0xFF)))
+    return data[2];    
+
+  if ((data[0] == 0) && (data[1] == 0xBF) && (data[2] == (~data[3] & 0xFF)))
+    return data[2];    
+  
   return -2;
 }
 
